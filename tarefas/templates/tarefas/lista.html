@@ -1,0 +1,111 @@
+{% extends 'tarefas/base.html' %}
+
+{% block content %}
+
+<div class="row mb-4 text-center">
+    <div class="col-md-4 mb-2">
+        <div class="card h-100 border-start border-4 border-primary">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase">Total</h6>
+                <h2 class="display-6 fw-bold">{{ total }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-2">
+        <div class="card h-100 border-start border-4 border-warning">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase">Pendentes</h6>
+                <h2 class="display-6 fw-bold text-warning">{{ pendentes }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-2">
+        <div class="card h-100 border-start border-4 border-success">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase">Finalizados</h6>
+                <h2 class="display-6 fw-bold text-success">{{ feitos }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center py-3">
+        <span class="fs-5"><i class="fa-solid fa-list-check me-2"></i>Lista de Serviços</span>
+        <a href="{% url 'nova_tarefa' %}" class="btn btn-brand btn-sm">
+            <i class="fa-solid fa-plus"></i> Nova Tarefa
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 15%;">Cliente</th>
+                    <th style="width: 20%;">Serviço</th>
+                    <th style="width: 20%;">Última Atualização</th>
+                    <th style="width: 10%;">Prazo</th>
+                    <th style="width: 15%;">Técnicos</th>
+                    <th style="width: 10%;">Status</th>
+                    <th style="width: 10%;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tarefa in tarefas %}
+                <tr>
+                    <td>
+                        <div class="fw-bold">{{ tarefa.cliente.nome }}</div>
+                        <span class="badge bg-light text-dark border">{{ tarefa.empresa|upper }}</span>
+                    </td>
+                    <td>{{ tarefa.servico }}</td>
+                    <td>
+                        {% if tarefa.ultima_atualizacao %}
+                            <span class="text-secondary small">{{ tarefa.ultima_atualizacao|truncatechars:40 }}</span>
+                        {% else %}
+                            <span class="text-muted fst-italic small">--</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if tarefa.prazo %}
+                            <span class="{% if tarefa.prazo < today and tarefa.status != 'feito' %}prazo-atrasado{% else %}prazo-normal{% endif %}">
+                                {{ tarefa.prazo|date:"d/m/Y" }}
+                            </span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% for tecnico in tarefa.tecnicos.all %}
+                            <div class="small text-muted"><i class="fa-regular fa-user me-1"></i>{{ tecnico.username }}</div>
+                        {% empty %}
+                            -
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <span class="badge status-{{ tarefa.status }} px-3 py-2 rounded-pill">
+                            {{ tarefa.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a href="{% url 'editar_tarefa' id=tarefa.id %}" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                            <a href="{% url 'excluir_tarefa' id=tarefa.id %}" 
+                               class="btn btn-sm btn-outline-danger"
+                               onclick="return confirm('Excluir esta tarefa?');" title="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">Nenhuma tarefa encontrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
